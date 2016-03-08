@@ -15,7 +15,10 @@ def server():
     while not message_complete:
         part = conn.recv(buffer_length)
         print(part.decode('utf8'))
+        conn.sendall(part)
         if len(part) < buffer_length:
             break
+            
+    conn.close()
 
 server()
