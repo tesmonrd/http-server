@@ -1,6 +1,7 @@
 # _*_utf8_*_
 
 import socket
+import sys
 
 
 def client(message):
@@ -18,4 +19,10 @@ def client(message):
         if len(part) < buffer_length:
             break
 
-client(input(u"What is your message:"))
+
+if __name__ == '__main__':
+    try:
+        client(input(u"What is your message:"))
+    except KeyboardInterrupt:
+        print('KeyboardInterrupted')
+        sys.exit(0)

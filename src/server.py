@@ -18,7 +18,7 @@ def server():
         conn.sendall(part)
         if len(part) < buffer_length:
             break
-            
-    conn.close()
 
-server()
+
+if __name__ == '__main__':
+        server()
