@@ -4,6 +4,7 @@ import socket
 
 
 def server():
+    """server responds with decoded bytes msg."""
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     address = ('127.0.0.1', 5000)
@@ -12,12 +13,20 @@ def server():
     conn, addr = server.accept()
     buffer_length = 8
     message_complete = False
-    while not message_complete:
-        part = conn.recv(buffer_length)
-        print(part.decode('utf8'))
-        conn.sendall(part)
-        if len(part) < buffer_length:
-            break
+
+    try:
+        while not message_complete:
+            part = conn.recv(buffer_length)
+            print(part.decode('utf8'))
+            conn.sendall(part)
+            if len(part) < buffer_length:
+                break
+    except KeyboardInterrupt:
+        print('KeyboardInterrupted')
+        conn.close()
+    except:
+        server.listen(1)
+        conn, addr = server.accept()
 
 
 if __name__ == '__main__':
