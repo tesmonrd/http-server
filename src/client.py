@@ -1,7 +1,6 @@
 # _*_utf8_*_
 
 import socket
-import sys
 
 
 def client(message):
@@ -11,7 +10,7 @@ def client(message):
     client.connect(stream_info[-1])
     client.sendall(message.encode('utf8'))
 
-    buffer_length = 8
+    buffer_length = 25
     reply_complete = False
     while not reply_complete:
         part = client.recv(buffer_length)
@@ -21,8 +20,4 @@ def client(message):
 
 
 if __name__ == '__main__':
-    try:
-        client(input(u"What is your message:"))
-    except KeyboardInterrupt:
-        print('KeyboardInterrupted')
-        sys.exit(0)
+    client(input(u"What is your message:"))
