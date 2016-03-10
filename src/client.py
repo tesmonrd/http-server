@@ -10,7 +10,7 @@ def client(message):
     client.connect(stream_info[-1])
     client.sendall(message.encode('utf8'))
 
-    buffer_length = 8
+    buffer_length = 25
     reply_complete = False
     while not reply_complete:
         part = client.recv(buffer_length)
