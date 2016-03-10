@@ -16,7 +16,7 @@ def client(message):
         part = client.recv(buffer_length)
         echo = part.decode('utf8')
         print(echo)
-        if len(echo) < buffer_length:
+        if len(part) < buffer_length:
             break
 
 
