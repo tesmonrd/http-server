@@ -24,9 +24,7 @@ def server():
                 while not message_complete:
                     part = conn.recv(buffer_length)
                     decoded = part.decode('utf8')
-                    print(decoded)
                     incoming_message += decoded
-                    parse_request(decoded)
                     if len(part) < buffer_length:
                         break
                 print(incoming_message)
