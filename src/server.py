@@ -27,9 +27,8 @@ def server():
                     incoming_message += decoded
                     if len(part) < buffer_length:
                         break
-                print(incoming_message)
                 try:
-                    conn.sendall(response(parse_request(incoming_message)))
+                    conn.sendall(parse_request(incoming_message).encode('utf8'))
                 except:
                     pass
                 conn.close()
@@ -64,7 +63,6 @@ def parse_request(request):
     headers_n = headers.replace('\n', '')
     headers_nc = headers_n.replace(':', ' ')
     parsed_request = headers_nc.split(' ')
-    print(parsed_request)
     if 'GET' not in parsed_request[0]:
         print("405 error: Method must be 'GET'")
         raise RuntimeError
@@ -74,7 +72,10 @@ def parse_request(request):
     elif 'Host' not in parsed_request[4]:
         print("404 error")
         raise RuntimeError
-    return parsed_request
+    else:
+        response_ok()
+        rejoined = " ".join(str(i) for i in parsed_request)
+    return rejoined
 
 
 if __name__ == '__main__':
