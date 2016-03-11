@@ -48,34 +48,32 @@ def server():
 
 
 def response_ok():
-    reply_ok = 'HTTP/1.1 200 OK\nContent-Type: text/plain\n\r\nYou Made It!'
+    reply_ok = 'HTTP/1.1 200 OK\nContent-Type: text/plain\r\nYou Made It!'
     return reply_ok.encode('utf8')
 
 
 def response_error():
-    reply_error = 'HTTP/1.1 500 Internal Server Error\nContent-Type: text/plain\n\r\nSomething bad happened!'
+    reply_error = 'HTTP/1.1 500 Internal Server Error\nContent-Type: text/plain\r\n\Something bad happened!'
     return reply_error.encode('utf8')
 
 
 def parse_request(request):
     """A."""
-    replaced_n = request.replace('\n', ' ')
-    parsed_request = replaced_n.split('')
-    try:
-        parsed_request[0] == 'GET'
-    except:
-        raise RuntimeError
+    header_body_split = request.split('\r\n')
+    headers = header_body_split[0]
+    headers_n = headers.replace('\n', '')
+    headers_nc = headers_n.replace(':', ' ')
+    parsed_request = headers_nc.split(' ')
+    print(parsed_request)
+    if 'GET' not in parsed_request[0]:
         print("405 error: Method must be 'GET'")
-    try:
-        parsed_request[2] == 'HTTP/1.1'
-    except:
         raise RuntimeError
+    elif 'HTTP/1.1' not in parsed_request[3]:
         print("505 error: Protocol must be 'HTTP/1.1'")
-    try:
-        parsed_request[3:4] == 'Host:'
-    except:
         raise RuntimeError
+    elif 'Host' not in parsed_request[4]:
         print("404 error")
+        raise RuntimeError
     return parsed_request
 
 

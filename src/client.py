@@ -8,7 +8,8 @@ def client(message):
     stream_info = [i for i in infos if i[1] == socket.SOCK_STREAM][0]
     client = socket.socket(*stream_info[:3])
     client.connect(stream_info[-1])
-    client.sendall(message.encode('utf8'))
+    http_message = "GET 127.0.0.1:5000 HTTP/1.1 \nHost:127.0.0.1\r\n" + message
+    client.sendall(http_message.encode('utf8'))
 
     buffer_length = 25
     reply_complete = False
@@ -21,4 +22,4 @@ def client(message):
 
 
 if __name__ == '__main__':
-    client(input(u"What is your message:"))
+    client(input(u"what's your message:"))
