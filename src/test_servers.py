@@ -1,15 +1,23 @@
-# _*_ utf-8 _*_
+# _*_coding: utf-8 _*_
+import pytest
 
 
-def test_response_ok():
-    """Test if 200 OK message same when decoded."""
-    from server import response_ok
-    response = response_ok()
-    assert response.decode('utf8') == 'HTTP/1.1 200 OK\nContent-Type: text/plain\n\r\nYou Made It!'
+def test_method_error():
+    """Test the parse_request GET error."""
+    from server import parse_request
+    with pytest.raises(RuntimeError):
+        parse_request("PUT 127.0.0.1:5000 HTTP/1.1 \nHost:127.0.0.1\r\n")
 
 
-def test_response_error():
-    """Test if 500 Error message same when decoded."""
-    from server import response_error
-    response = response_error()
-    assert response.decode('utf8') == 'HTTP/1.1 500 Internal Server Error\nContent-Type: text/plain\n\r\nSomething bad happened!'
+def test_version_error():
+    """Test if the HHTP-version is correct."""
+    from server import parse_request
+    with pytest.raises(RuntimeError):
+        parse_request("GET 127.0.0.1:5000 HTTP/3.1 \nHost:127.0.0.1\r\n")
+
+
+def test_host_error():
+    """Test if the host Header is correct."""
+    from server import parse_request
+    with pytest.raises(RuntimeError):
+        parse_request("GET 127.0.0.1:5000 HTTP/1.1 \nHos:127.0.0.1\r\n")
