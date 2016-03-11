@@ -11,7 +11,7 @@ def server():
     server.bind(address)
     server.listen(1)
     conn, addr = server.accept()
-    buffer_length = 8
+    buffer_length = 16
     message_complete = False
 
     try:
@@ -29,6 +29,7 @@ def server():
                         break
                 try:
                     conn.sendall(parse_request(incoming_message).encode('utf8'))
+                    conn.sendall(response_ok())
                 except:
                     pass
                 conn.close()
