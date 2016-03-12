@@ -34,6 +34,7 @@ def server():
                     if len(part) < buffer_length:
                         break
                 try:
+                    #look here
                     uri_message = parse_request(incoming_message)
                     print("WERE IN OUT OF THE LOOP")
                     resolve_uri(uri)
@@ -64,6 +65,10 @@ def response_error():
     reply_error = 'HTTP/1.1 500 Internal Server Error\nContent-Type: text/plain\r\n\Something bad happened!'
     return reply_error.encode('utf8')
 
+#function to take headers and body
+#check for well-formed headers (GET< URI,)
+#get  the uri and got to where it says to go. if not matching up send error
+#make symbols and run the functions on them
 
 def parse_request(request):
     """A."""
