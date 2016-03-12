@@ -1,6 +1,11 @@
-# _*_utf8_*_
+# -*-coding: utf8-*-
 
 import socket
+import os
+import mimetypes
+
+
+root = "../webroot/"
 
 
 def server():
@@ -17,6 +22,7 @@ def server():
     try:
         while True:
             try:
+                import pdb; pdb.set_trace()
                 incoming_message = ''
                 response = response_ok()
                 buffer_length = 25
@@ -28,8 +34,10 @@ def server():
                     if len(part) < buffer_length:
                         break
                 try:
-                    conn.sendall(parse_request(incoming_message).encode('utf8'))
-                    conn.sendall(response_ok())
+                    uri_message = parse_request(incoming_message)
+                    print("WERE IN OUT OF THE LOOP")
+                    resolve_uri(uri)
+
                 except:
                     pass
                 conn.close()
@@ -59,11 +67,13 @@ def response_error():
 
 def parse_request(request):
     """A."""
+    uri = ''
     header_body_split = request.split('\r\n')
     headers = header_body_split[0]
     headers_n = headers.replace('\n', '')
     headers_nc = headers_n.replace(':', ' ')
     parsed_request = headers_nc.split(' ')
+    uri += parsed_request[1:]
     if 'GET' not in parsed_request[0]:
         print("405 error: Method must be 'GET'")
         raise RuntimeError
@@ -77,6 +87,46 @@ def parse_request(request):
         response_ok()
         rejoined = " ".join(str(i) for i in parsed_request)
     return rejoined
+
+
+def directory_response(path):
+    path = os.path.join(root, uri)
+    body = "<html><ul>"
+    for item in os.lisdir(path):
+        body += "<li>{}</li>".format(item)
+    body += "</ul></html>"
+    response_ok()
+    return(body, "content is directory")
+
+
+def file_response(path):
+    if mimetypes.guess_type(path)[0].startswith('text'):
+        with io.open(path) as f:
+            content = f.read()
+        response_ok()
+        return (content, "text")
+    elif mimetypes.guess_type(path)[0].startswith('image'):
+        body = "<html><ul>"
+        for item in os.lisdir(path):
+            body += "<a><img src={}></a>".format(item)
+        body += "</ul></html>"
+        response_ok()
+        return (body, "image")
+    else:
+        response_error()
+        return("404 Error")
+
+
+def resolve_uri(uri):
+    """resolve uri."""
+    path = os.path.join(root, uri)
+    print(path)
+    if os.path.isdir(path):
+        return directory_response(path)
+    elif os.path.isfile(path):
+        return file_response(path)
+    else:
+        return("404 NOT FOUND")
 
 
 if __name__ == '__main__':
