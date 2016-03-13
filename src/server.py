@@ -5,7 +5,7 @@ import os
 import mimetypes
 
 
-root = "../webroot/"
+root = "./http-server/webroot/"
 
 
 def server():
@@ -22,7 +22,7 @@ def server():
     try:
         while True:
             try:
-                import pdb; pdb.set_trace()
+                # import pdb; pdb.set_trace()py
                 incoming_message = ''
                 response = response_ok()
                 buffer_length = 25
@@ -34,10 +34,10 @@ def server():
                     if len(part) < buffer_length:
                         break
                 try:
-                    #look here
+                    #uri_messgae =/a_web_page.html/
                     uri_message = parse_request(incoming_message)
-                    print("WERE IN OUT OF THE LOOP")
-                    resolve_uri(uri)
+                    print(uri_message)
+                    resolve_uri(uri_message)
 
                 except:
                     pass
@@ -76,22 +76,23 @@ def parse_request(request):
     header_body_split = request.split('\r\n')
     headers = header_body_split[0]
     headers_n = headers.replace('\n', '')
-    headers_nc = headers_n.replace(':', ' ')
-    parsed_request = headers_nc.split(' ')
-    uri += parsed_request[1:]
+    # headers_nc = headers_n.replace(':', ' ')
+    parsed_request = headers_n.split(' ')
+    print(parsed_request)
+    uri += parsed_request[1]
     if 'GET' not in parsed_request[0]:
         print("405 error: Method must be 'GET'")
         raise RuntimeError
-    elif 'HTTP/1.1' not in parsed_request[3]:
+    elif 'HTTP/1.1' not in parsed_request[2]:
         print("505 error: Protocol must be 'HTTP/1.1'")
         raise RuntimeError
-    elif 'Host' not in parsed_request[4]:
+    elif 'Host' not in parsed_request[3]:
         print("404 error")
         raise RuntimeError
     else:
         response_ok()
-        rejoined = " ".join(str(i) for i in parsed_request)
-    return rejoined
+        # rejoined = " ".join(str(i) for i in parsed_request)
+    return uri
 
 
 def directory_response(path):
@@ -101,6 +102,7 @@ def directory_response(path):
         body += "<li>{}</li>".format(item)
     body += "</ul></html>"
     response_ok()
+    print("this is direcotry")
     return(body, "content is directory")
 
 
@@ -109,6 +111,7 @@ def file_response(path):
         with io.open(path) as f:
             content = f.read()
         response_ok()
+        print(content)
         return (content, "text")
     elif mimetypes.guess_type(path)[0].startswith('image'):
         body = "<html><ul>"
@@ -118,6 +121,7 @@ def file_response(path):
         response_ok()
         return (body, "image")
     else:
+        print("here?")
         response_error()
         return("404 Error")
 
@@ -126,12 +130,15 @@ def resolve_uri(uri):
     """resolve uri."""
     path = os.path.join(root, uri)
     print(path)
+    #something wrong with path
     if os.path.isdir(path):
         return directory_response(path)
     elif os.path.isfile(path):
         return file_response(path)
     else:
-        return("404 NOT FOUND")
+        print("404 NOT FOUND")
+        raise IOError("404: Not Found")
+        #comes here
 
 
 if __name__ == '__main__':
