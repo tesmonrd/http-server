@@ -34,7 +34,7 @@ def server():
                     if len(part) < buffer_length:
                         break
                 try:
-                    #uri_messgae =/a_web_page.html/
+
                     uri_message = parse_request(incoming_message)
                     print(uri_message)
                     resolve_uri(uri_message)
