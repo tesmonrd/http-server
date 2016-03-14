@@ -120,7 +120,9 @@ def server():
                     uri_message = parse_request(client_conn)
                     print(uri_message)
                     try:
-                        #expected 2 values returned/the assignment is assuming
+                        #content, file type expected 2 values returned
+                        #if directory or error was returned, there will valueerror
+                        #the assignment is assuming
                         # that file response will be returned? maybe use if else
                         # for different uri types
                         content, file_type = resolve_uri(uri_message)
