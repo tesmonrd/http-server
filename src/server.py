@@ -2,58 +2,11 @@
 
 import socket
 import os
+import io
 import mimetypes
 
 
 root = "../webroot/"
-
-
-def server():
-    """Server responds with decoded bytes msg."""
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
-    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    address = ('127.0.0.1', 5000)
-    server.bind(address)
-    server.listen(1)
-    conn, addr = server.accept()
-    buffer_length = 16
-    message_complete = False
-
-    try:
-        while True:
-            try:
-                import pdb; pdb.set_trace()
-                incoming_message = ''
-                response = response_ok()
-                buffer_length = 25
-                message_complete = False
-                while not message_complete:
-                    part = conn.recv(buffer_length)
-                    decoded = part.decode('utf8')
-                    incoming_message += decoded
-                    if len(part) < buffer_length:
-                        break
-                try:
-                    #look here
-                    uri_message = parse_request(incoming_message)
-                    print("WERE IN OUT OF THE LOOP")
-                    resolve_uri(uri)
-
-                except:
-                    pass
-                conn.close()
-                server.listen(1)
-                conn, addr = server.accept()
-            except:
-                response = response_error()
-                conn.sendall(response)
-    except KeyboardInterrupt:
-        print('KeyboardInterrupted')
-        server.close()
-    finally:
-        conn.close()
-        server.listen(1)
-        conn, addr = server.accept()
 
 
 def response_ok():
@@ -65,73 +18,127 @@ def response_error():
     reply_error = 'HTTP/1.1 500 Internal Server Error\nContent-Type: text/plain\r\n\Something bad happened!'
     return reply_error.encode('utf8')
 
-#function to take headers and body
-#check for well-formed headers (GET< URI,)
-#get  the uri and got to where it says to go. if not matching up send error
-#make symbols and run the functions on them
 
 def parse_request(request):
     """A."""
-    uri = ''
-    header_body_split = request.split('\r\n')
-    headers = header_body_split[0]
-    headers_n = headers.replace('\n', '')
-    headers_nc = headers_n.replace(':', ' ')
-    parsed_request = headers_nc.split(' ')
-    uri += parsed_request[1:]
-    if 'GET' not in parsed_request[0]:
+    main_split = request.split('\r\n')
+    request_headers = main_split[0].split(' ')
+    if 'GET' not in request_headers[0]:
         print("405 error: Method must be 'GET'")
-        raise RuntimeError
-    elif 'HTTP/1.1' not in parsed_request[3]:
+        raise NameError
+    elif 'HTTP/1.1' not in request_headers[2]:
         print("505 error: Protocol must be 'HTTP/1.1'")
-        raise RuntimeError
-    elif 'Host' not in parsed_request[4]:
-        print("404 error")
-        raise RuntimeError
+        raise TypeError
+    elif 'Host: localhost' not in request_headers[1]:
+        print("400 error")
+        raise ValueError
     else:
-        response_ok()
-        rejoined = " ".join(str(i) for i in parsed_request)
-    return rejoined
+        raise AttributeError
 
 
-def directory_response(path):
-    path = os.path.join(root, uri)
-    body = "<html><ul>"
-    for item in os.lisdir(path):
-        body += "<li>{}</li>".format(item)
-    body += "</ul></html>"
-    response_ok()
-    return(body, "content is directory")
+def server_listen(conn):
+    incoming_message = ''
+    incoming_byte = b''
+    buffer_length = 500
+    while True:
+        part = conn.recv(buffer_length)
+        incoming_byte += part
+        incoming_message += part.decode('utf8')
+        if len(part) < buffer_length:
+            break
+    return incoming_message
+
+
+def directory_response(direc):
+    print(dir)
+    content = "<!DOCTYPE html>\r\n<html>\r\n<ul>\r\n<body>\r\n\r\n"
+    for i in os.listdir(direc):
+        print(i)
+        if os.path.isdir(os.path.join(direc, i)):
+            content += "<li>{}</li>".format(i)
+        else:
+            content += "<li>{}</li>".format(i)
+    content += "</ul>\r\n</body>\r\n</html>"
+    return content
 
 
 def file_response(path):
     if mimetypes.guess_type(path)[0].startswith('text'):
         with io.open(path) as f:
             content = f.read()
-        response_ok()
         return (content, "text")
     elif mimetypes.guess_type(path)[0].startswith('image'):
         body = "<html><ul>"
         for item in os.lisdir(path):
             body += "<a><img src={}></a>".format(item)
         body += "</ul></html>"
-        response_ok()
         return (body, "image")
     else:
-        response_error()
         return("404 Error")
 
 
-def resolve_uri(uri):
-    """resolve uri."""
-    path = os.path.join(root, uri)
-    print(path)
-    if os.path.isdir(path):
-        return directory_response(path)
-    elif os.path.isfile(path):
-        return file_response(path)
+def resolve_uri(uri, path='..'):
+    """Resolve uri."""
+    file_type = ""
+    path_root = os.path.join(path, 'webroot', uri[1:])
+    print(path_root)
+    if os.path.isdir(path_root):
+        print("directory", path_root)
+        return directory_response(path_root)
+    elif os.path.isfile(path_root):
+        print("file")
+        file_path = io.open(path_root, 'rb')
+        print("filepath:", file_path)
+        content = file_path.read()
+        print("content:", content)
+        file_type = mimetypes.guess_type(uri)
+        print("type: ", file_type[0])
+        file_path.close()
+        return content, file_type[0]
+        # return directory_response(path)
     else:
         return("404 NOT FOUND")
+
+
+def server():
+    """Server responds with decoded bytes msg."""
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    address = ('127.0.0.1', 5000)
+    server.bind(address)
+    server.listen(1)
+    conn, addr = server.accept()
+
+    try:
+        while True:
+            try:
+                client_conn = server_listen(conn)
+                print(client_conn)
+                try:
+                    uri_message = parse_request(client_conn)
+                    print(uri_message)
+                except ValueError:
+                    response = print("HTTP/1.1 400 Bad Request\r\n")
+                except TypeError:
+                    response = print("HTTP/1.1 505 HTTP Version Not Supported\r\n")
+                except NameError:
+                    response = print("HTTP/1.1 405 Method Not Allowed\r\n")
+                try:
+                    content, file_type = resolve_uri(uri_message)
+                    print("file", file_type)
+                    print("content", content)
+                    response_ok()
+                except OSError:
+                    response_error()
+                conn.sendall(conn, response)
+                break
+            finally:
+                conn.close
+    except KeyboardInterrupt:
+        print('KeyboardInterrupted')
+        server.close()
+    finally:
+        server.close()
 
 
 if __name__ == '__main__':
