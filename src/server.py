@@ -29,11 +29,12 @@ def parse_request(request):
     elif 'HTTP/1.1' not in request_headers[2]:
         print("505 error: Protocol must be 'HTTP/1.1'")
         raise TypeError
-    elif 'Host: localhost' not in request_headers[1]:
+    elif '127.0.0.1' not in request_headers[1]:#what if client ask 127.0.0.1
         print("400 error")
         raise ValueError
-    else:
-        raise AttributeError
+    # else:
+    #     raise AttributeError
+    # return request_headers[1]/ should be a string
 
 
 def server_listen(conn):
@@ -59,7 +60,7 @@ def directory_response(direc):
         else:
             content += "<li>{}</li>".format(i)
     content += "</ul>\r\n</body>\r\n</html>"
-    return content
+    return content#maybe return a tuple too?
 
 
 def file_response(path):
@@ -80,7 +81,7 @@ def file_response(path):
 def resolve_uri(uri, path='..'):
     """Resolve uri."""
     file_type = ""
-    path_root = os.path.join(path, 'webroot', uri[1:])
+    path_root = os.path.join(path, 'webroot', uri)#uri should be string
     print(path_root)
     if os.path.isdir(path_root):
         print("directory", path_root)
@@ -98,6 +99,7 @@ def resolve_uri(uri, path='..'):
         # return directory_response(path)
     else:
         return("404 NOT FOUND")
+        #raise an error, func called in server()
 
 
 def server():
@@ -117,19 +119,25 @@ def server():
                 try:
                     uri_message = parse_request(client_conn)
                     print(uri_message)
+                    try:
+                        #expected 2 values returned/the assignment is assuming
+                        # that file response will be returned? maybe use if else
+                        # for different uri types
+                        content, file_type = resolve_uri(uri_message)
+                        print("file", file_type)
+                        print("content", content)
+                        response_ok()
+                        #need to define response here to pass into
+                        #conn.senall(). eg. response = 'ok'
+                    except OSError:
+                        response_error()
                 except ValueError:
                     response = print("HTTP/1.1 400 Bad Request\r\n")
                 except TypeError:
                     response = print("HTTP/1.1 505 HTTP Version Not Supported\r\n")
                 except NameError:
                     response = print("HTTP/1.1 405 Method Not Allowed\r\n")
-                try:
-                    content, file_type = resolve_uri(uri_message)
-                    print("file", file_type)
-                    print("content", content)
-                    response_ok()
-                except OSError:
-                    response_error()
+
                 conn.sendall(conn, response)
                 break
             finally:
