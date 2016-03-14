@@ -1,17 +1,18 @@
 # _*_utf8_*_
 import socket
+import sys
 
 
 def client(message):
-    """client sends encoded bytes msg."""
+    """Client sends encoded bytes msg."""
     infos = socket.getaddrinfo('127.0.0.1', 5000)
     stream_info = [i for i in infos if i[1] == socket.SOCK_STREAM][0]
     client = socket.socket(*stream_info[:3])
     client.connect(stream_info[-1])
-    http_message = "GET 127.0.0.1:5000 HTTP/1.1 \nHost:127.0.0.1\r\n" + message
+    http_message = "GET 127.0.0.1:5000 HTTP/1.1 \nHost: 127.0.0.1\r\nHello"
     client.sendall(http_message.encode('utf8'))
 
-    buffer_length = 25
+    buffer_length = 50
     reply_complete = False
     while not reply_complete:
         part = client.recv(buffer_length)
@@ -22,4 +23,4 @@ def client(message):
 
 
 if __name__ == '__main__':
-    client(input(u"what's your message:"))
+    client(sys.argv[1])
