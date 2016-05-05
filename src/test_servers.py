@@ -2,6 +2,9 @@
 import pytest
 
 
+URI_RESPONSE = [("/a_web_page.html", ("<!DOCTYPE html>", "text/html"))]
+
+
 def test_method_error():
     """Test the parse_request GET error."""
     from server import parse_request
@@ -21,3 +24,10 @@ def test_host_error():
     from server import parse_request
     with pytest.raises(ValueError):
         parse_request("GET 127.0.0.1:5000 HTTP/1.1 \nHos:127.0.0.1\r\n")
+
+
+# @pytest.mark.parametrize("request, response", URI_RESPONSE)
+def test_resolve_uri():
+    from server import resolve_uri
+    res = resolve_uri("/text.html")
+    assert res == "file"
