@@ -10,7 +10,6 @@ def client(message):
     client = socket.socket(*stream_info[:3])
     client.connect(stream_info[-1])
 
-
     client.sendall(message.encode('utf8'))
     client.shutdown(socket.SHUT_WR)
 
